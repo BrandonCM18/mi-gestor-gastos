@@ -1,0 +1,364 @@
+<h2><i class="fas fa-tachometer-alt"></i> Dashboard Financiero</h2>
+
+<!-- Métricas Principales -->
+<div class="metrics-grid">
+    <div class="metric-card">
+        <div class="metric-icon" style="background-color: #4361ee;">
+            <i class="fas fa-wallet"></i>
+        </div>
+        <div class="metric-content">
+            <h3>Balance Total</h3>
+            <p class="metric-value">$<%= balance %></p>
+        </div>
+    </div>
+    
+    <div class="metric-card">
+        <div class="metric-icon" style="background-color: #2ecc71;">
+            <i class="fas fa-arrow-up"></i>
+        </div>
+        <div class="metric-content">
+            <h3>Ingresos del Mes</h3>
+            <p class="metric-value">$<%= monthlySummary.income.toFixed(2) %></p>
+            <% if (monthlySummary.incomeTrend !== 'neutral') { %>
+            <p class="metric-trend <%= monthlySummary.incomeTrend %>">
+                <i class="fas fa-arrow-<%= monthlySummary.incomeTrend === 'up' ? 'up' : 'down' %>"></i>
+                $<%= Math.abs(monthlySummary.incomeChange).toFixed(2) %>
+            </p>
+            <% } %>
+        </div>
+    </div>
+    
+    <div class="metric-card">
+        <div class="metric-icon" style="background-color: #e74c3c;">
+            <i class="fas fa-arrow-down"></i>
+        </div>
+        <div class="metric-content">
+            <h3>Gastos del Mes</h3>
+            <p class="metric-value">$<%= monthlySummary.expense.toFixed(2) %></p>
+            <% if (monthlySummary.expenseTrend !== 'neutral') { %>
+            <p class="metric-trend <%= monthlySummary.expenseTrend %>">
+                <i class="fas fa-arrow-<%= monthlySummary.expenseTrend === 'up' ? 'up' : 'down' %>"></i>
+                $<%= Math.abs(monthlySummary.expenseChange).toFixed(2) %>
+            </p>
+            <% } %>
+        </div>
+    </div>
+    
+    <div class="metric-card">
+        <div class="metric-icon" style="background-color: #f39c12;">
+            <i class="fas fa-exchange-alt"></i>
+        </div>
+        <div class="metric-content">
+            <h3>Transacciones</h3>
+            <p class="metric-value"><%= monthlySummary.transactionCount %></p>
+            <p class="metric-trend">Este mes</p>
+        </div>
+    </div>
+</div>
+
+<!-- Gráficos -->
+<div class="charts-dashboard">
+    <div class="chart-container">
+        <h3><i class="fas fa-chart-pie"></i> Distribución de Gastos</h3>
+        <div class="chart">
+            <canvas id="expensesChart"></canvas>
+        </div>
+        <% if (chartData.expenseValues.length === 0) { %>
+            <p class="no-data">No hay gastos este mes</p>
+        <% } %>
+    </div>
+    
+    <div class="chart-container">
+        <h3><i class="fas fa-chart-line"></i> Evolución Mensual</h3>
+        <div class="chart">
+            <canvas id="trendChart"></canvas>
+        </div>
+        <% if (trendData.labels.length === 0) { %>
+            <p class="no-data">No hay datos históricos</p>
+        <% } %>
+    </div>
+</div>
+
+<!-- Alertas y Recordatorios -->
+<% if (budgetAlerts && budgetAlerts.length > 0) { %>
+<div class="alerts-section">
+    <h3><i class="fas fa-bell"></i> Alertas de Presupuesto</h3>
+    <% budgetAlerts.forEach(alert => { %>
+    <div class="alert <%= alert.status === 'danger' ? 'error' : 'warning' %>">
+        <i class="fas fa-<%= alert.status === 'danger' ? 'exclamation-triangle' : 'exclamation-circle' %>"></i>
+        <strong><%= alert.name %>:</strong>
+        <%= alert.status === 'danger' ? 'Has excedido' : 'Te estás acercando' %> al presupuesto.
+        Has gastado $<%= alert.spent.toFixed(2) %> de $<%= alert.budget.toFixed(2) %> (<%= alert.percentage.toFixed(0) %>%)
+    </div>
+    <% }); %>
+</div>
+<% } %>
+
+<!-- Análisis por Categoría -->
+<div class="analysis-section">
+    <h3><i class="fas fa-tags"></i> Top Categorías de Gastos</h3>
+    <div class="categories-analysis">
+        <% 
+        // Filtrar solo categorías de gasto con mayor gasto
+        const topExpenseCategories = categoryAnalysis
+            .filter(cat => cat.type === 'gasto' && cat.monthlySpent > 0)
+            .sort((a, b) => b.monthlySpent - a.monthlySpent)
+            .slice(0, 5);
+        %>
+        
+        <% topExpenseCategories.forEach(category => { %>
+        <div class="category-analysis-card">
+            <div class="category-header">
+                <h4><%= category.name %></h4>
+                <span class="category-badge" style="background-color: <%= category.color %>"></span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill <%= category.status %>" 
+                     style="width: <%= Math.min(category.percentage, 100) %>%;"></div>
+            </div>
+            <div class="category-stats">
+                <p><strong>$<%= category.monthlySpent.toFixed(2) %></strong> este mes</p>
+                <% if (category.budget > 0) { %>
+                <p>Presupuesto: $<%= category.budget.toFixed(2) %></p>
+                <p class="trend-<%= category.trend %>">
+                    <i class="fas fa-arrow-<%= category.trend === 'up' ? 'up' : category.trend === 'down' ? 'down' : 'right' %>"></i>
+                    Tendencia <%= category.trend === 'up' ? 'alcista' : category.trend === 'down' ? 'bajista' : 'estable' %>
+                </p>
+                <% } %>
+            </div>
+        </div>
+        <% }); %>
+    </div>
+</div>
+
+<!-- Acciones Rápidas Mejorado -->
+<div class="quick-actions-section">
+    <h3><i class="fas fa-bolt"></i> Acciones Rápidas</h3>
+    <div class="quick-actions-grid">
+        <a href="/transactions/new" class="quick-action-card">
+            <div class="action-icon">
+                <i class="fas fa-plus-circle"></i>
+            </div>
+            <div class="action-content">
+                <h4>Nueva Transacción</h4>
+                <p>Agregar ingreso o gasto</p>
+            </div>
+            <div class="action-arrow">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+        </a>
+        
+        <a href="/transactions" class="quick-action-card">
+            <div class="action-icon">
+                <i class="fas fa-list"></i>
+            </div>
+            <div class="action-content">
+                <h4>Ver Transacciones</h4>
+                <p>Historial completo</p>
+            </div>
+            <div class="action-arrow">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+        </a>
+        
+        <a href="/categories" class="quick-action-card">
+            <div class="action-icon">
+                <i class="fas fa-tags"></i>
+            </div>
+            <div class="action-content">
+                <h4>Gestionar Categorías</h4>
+                <p>Organizar gastos</p>
+            </div>
+            <div class="action-arrow">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+        </a>
+        
+        <a href="/categories/budgets/manage" class="quick-action-card">
+            <div class="action-icon">
+                <i class="fas fa-chart-pie"></i>
+            </div>
+            <div class="action-content">
+                <h4>Presupuestos</h4>
+                <p>Controlar gastos</p>
+            </div>
+            <div class="action-arrow">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Transacciones Recientes -->
+<% if (transactions && transactions.length > 0) { %>
+<div class="recent-transactions">
+    <div class="section-header">
+        <h3><i class="fas fa-history"></i> Transacciones Recientes</h3>
+        <a href="/transactions" class="btn small">Ver todas</a>
+    </div>
+    <div class="transactions-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Descripción</th>
+                    <th>Categoría</th>
+                    <th>Tipo</th>
+                    <th>Monto</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% transactions.slice(0, 5).forEach(transaction => { %>
+                <tr>
+                    <td><%= transaction.date %></td>
+                    <td><%= transaction.description %></td>
+                    <td><%= transaction.category %></td>
+                    <td>
+                        <span class="type-badge <%= transaction.type %>">
+                            <%= transaction.type === 'ingreso' ? 'Ingreso' : 'Gasto' %>
+                        </span>
+                    </td>
+                    <td class="amount <%= transaction.type %>">
+                        <%= transaction.type === 'ingreso' ? '+' : '-' %>$<%= transaction.amount.toFixed(2) %>
+                    </td>
+                </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    </div>
+</div>
+<% } else { %>
+<div class="empty-state">
+    <p><i class="fas fa-receipt fa-3x"></i></p>
+    <h3>No hay transacciones este mes</h3>
+    <p>Comienza registrando tu primera transacción</p>
+    <a href="/transactions/new" class="btn">Crear primera transacción</a>
+</div>
+<% } %>
+
+<script>
+// Gráfico de distribución de gastos
+function initExpensesChart() {
+    const ctx = document.getElementById('expensesChart');
+    if (!ctx) return;
+    
+    const expenseData = {
+        labels: <%- JSON.stringify(chartData.expenseLabels) %>,
+        datasets: [{
+            data: <%- JSON.stringify(chartData.expenseValues) %>,
+            backgroundColor: <%- JSON.stringify(chartData.expenseColors) %>,
+            borderWidth: 0,
+            hoverOffset: 12
+        }]
+    };
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: expenseData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '60%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        font: { size: 12 },
+                        padding: 15,
+                        usePointStyle: true
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.raw || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            return `${label}: $${value.toFixed(2)} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Gráfico de evolución mensual
+function initTrendChart() {
+    const ctx = document.getElementById('trendChart');
+    if (!ctx) return;
+    
+    const trendData = {
+        labels: <%- JSON.stringify(trendData.labels) %>,
+        datasets: [
+            {
+                label: 'Ingresos',
+                data: <%- JSON.stringify(trendData.incomeData) %>,
+                backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                borderColor: '#2ecc71',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true
+            },
+            {
+                label: 'Gastos',
+                data: <%- JSON.stringify(trendData.expenseData) %>,
+                backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                borderColor: '#e74c3c',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true
+            }
+        ]
+    };
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: trendData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    }
+                },
+                x: {
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        font: { size: 12 },
+                        padding: 15
+                    }
+                }
+            },
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            }
+        }
+    });
+}
+
+// Inicializar gráficos cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', function() {
+    initExpensesChart();
+    initTrendChart();
+    
+    // Animaciones para las tarjetas métricas
+    const metricCards = document.querySelectorAll('.metric-card');
+    metricCards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.1}s`;
+        card.classList.add('animate-in');
+    });
+});
+</script>

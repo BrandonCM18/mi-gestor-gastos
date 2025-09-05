@@ -1,0 +1,3 @@
+[submodule ".gitkraken/tutorial/Intro"]
+	path = .gitkraken/tutorial/Intro
+	url = https://github.com/BrandonCM18/Mini-generador-lexico

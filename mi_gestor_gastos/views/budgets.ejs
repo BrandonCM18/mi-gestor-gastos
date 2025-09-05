@@ -1,0 +1,120 @@
+<h2><i class="fas fa-chart-pie"></i> Gestión de Presupuestos</h2>
+
+<div class="budgets-header">
+    <a href="/categories" class="btn secondary"><i class="fas fa-arrow-left"></i> Volver a Categorías</a>
+</div>
+
+<% if (budgetAlerts && budgetAlerts.length > 0) { %>
+<div class="alerts-section">
+    <h3><i class="fas fa-bell"></i> Alertas de Presupuesto</h3>
+    <% budgetAlerts.forEach(alert => { %>
+    <div class="alert <%= alert.status === 'danger' ? 'error' : 'warning' %>">
+        <i class="fas fa-<%= alert.status === 'danger' ? 'exclamation-triangle' : 'exclamation-circle' %>"></i>
+        <strong><%= alert.name %>:</strong>
+        <%= alert.status === 'danger' ? 'Has excedido' : 'Te estás acercando' %> al presupuesto.
+        Has gastado $<%= alert.spent.toFixed(2) %> de $<%= alert.budget.toFixed(2) %> (<%= alert.percentage.toFixed(0) %>%)
+    </div>
+    <% }); %>
+</div>
+<% } %>
+
+<div class="budgets-container">
+    <div class="budgets-grid">
+        <% categories.forEach(category => { %>
+            <% if (category.type === 'gasto') { %>
+            <div class="budget-card">
+                <div class="budget-header" style="border-left: 4px solid <%= category.color || '#6c757d' %>;">
+                    <h3><%= category.name %></h3>
+                    <span class="category-badge" style="background-color: <%= category.color || '#6c757d' %>"></span>
+                </div>
+                
+                <div class="budget-current">
+                    <% const spent = getCategorySpending(category.name); %>
+                    <% const budget = category.budget || 0; %>
+                    <% const percentage = budget > 0 ? (spent / budget) * 100 : 0; %>
+                    <% let status = 'success'; %>
+                    <% if (percentage >= 80) status = 'warning'; %>
+                    <% if (percentage >= 100) status = 'danger'; %>
+                    
+                    <div class="budget-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill <%= status %>" style="width: <%= Math.min(percentage, 100) %>%;"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span>$<%= spent.toFixed(2) %> / $<%= budget.toFixed(2) %></span>
+                            <span><%= percentage.toFixed(0) %>%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="budget-stats">
+                        <div class="stat">
+                            <small>Presupuesto: $<%= budget.toFixed(2) %></small>
+                        </div>
+                        <div class="stat">
+                            <small>Gastado: $<%= spent.toFixed(2) %></small>
+                        </div>
+                        <div class="stat">
+                            <small>Restante: $<%= (budget - spent).toFixed(2) %></small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="budget-form">
+                    <form class="budget-update-form" data-category-id="<%= category.id %>">
+                        <div class="form-group">
+                            <label for="budget-<%= category.id %>">Nuevo Presupuesto:</label>
+                            <input type="number" id="budget-<%= category.id %>" step="0.01" min="0" 
+                                   placeholder="0.00" value="<%= category.budget || '' %>">
+                        </div>
+                        <button type="submit" class="btn small">Actualizar</button>
+                    </form>
+                </div>
+            </div>
+            <% } %>
+        <% }); %>
+    </div>
+</div>
+
+<script>
+// Actualizar presupuestos via AJAX
+document.addEventListener('DOMContentLoaded', function() {
+    const forms = document.querySelectorAll('.budget-update-form');
+    
+    forms.forEach(form => {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const categoryId = this.dataset.categoryId;
+            const input = this.querySelector('input');
+            const budget = parseFloat(input.value);
+            
+            if (isNaN(budget) || budget < 0) {
+                alert('Por favor ingresa un presupuesto válido');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/categories/${categoryId}/budget`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ budget: budget })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Presupuesto actualizado correctamente');
+                    location.reload();
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                alert('Error al actualizar el presupuesto');
+                console.error('Error:', error);
+            }
+        });
+    });
+});
+</script>

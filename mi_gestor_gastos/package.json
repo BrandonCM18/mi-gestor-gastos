@@ -1,0 +1,27 @@
+{
+  "name": "mi_gestor_gastos",
+  "version": "1.0.0",
+  "description": "Aplicación para gestionar gastos personales",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "build": "echo 'No build step needed for Node.js'",
+    "test": "echo 'No tests specified'"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "chart.js": "^4.5.0",
+    "dotenv": "^17.2.2",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "express-ejs-layouts": "^2.5.1",
+    "method-override": "^3.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

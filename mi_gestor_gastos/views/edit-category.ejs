@@ -1,0 +1,37 @@
+<h2><i class="fas fa-edit"></i> Editar Categoría</h2>
+
+<div class="form-container">
+    <form action="/categories/<%= category.id %>?_method=PUT" method="POST" class="category-form">
+        <% if (error) { %>
+            <div class="alert error">
+                <i class="fas fa-exclamation-circle"></i> <%= error %>
+            </div>
+        <% } %>
+        
+        <div class="form-group">
+            <label for="name">Nombre de la categoría:</label>
+            <input type="text" id="name" name="name" value="<%= category.name %>" required 
+                   placeholder="Ej: Supermercado, Salario, etc.">
+        </div>
+        
+        <div class="form-group">
+            <label for="type">Tipo:</label>
+            <select id="type" name="type" required>
+                <option value="gasto" <%= category.type === 'gasto' ? 'selected' : '' %>>Gasto</option>
+                <option value="ingreso" <%= category.type === 'ingreso' ? 'selected' : '' %>>Ingreso</option>
+                <option value="mixto" <%= category.type === 'mixto' ? 'selected' : '' %>>Mixto</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="color">Color:</label>
+            <input type="color" id="color" name="color" value="<%= category.color || '#6c757d' %>">
+            <small>Selecciona un color para identificar esta categoría</small>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn">Actualizar Categoría</button>
+            <a href="/categories" class="btn secondary">Cancelar</a>
+        </div>
+    </form>
+</div>

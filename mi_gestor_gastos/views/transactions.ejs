@@ -1,0 +1,187 @@
+<h2><i class="fas fa-filter"></i> <%= title %></h2>
+
+<!-- Estadísticas -->
+<% if (stats) { %>
+<div class="stats-container">
+    <div class="stat-card">
+        <h4>Total Transacciones</h4>
+        <p class="stat-number"><%= stats.total %></p>
+    </div>
+    <div class="stat-card">
+        <h4>Total Ingresos</h4>
+        <p class="stat-number income">+$<%= stats.totalIncome %></p>
+    </div>
+    <div class="stat-card">
+        <h4>Total Gastos</h4>
+        <p class="stat-number expense">-$<%= stats.totalExpense %></p>
+    </div>
+    <div class="stat-card">
+        <h4>Balance</h4>
+        <p class="stat-number <%= stats.balance >= 0 ? 'income' : 'expense' %>">
+            <%= stats.balance >= 0 ? '+' : '' %>$<%= stats.balance %>
+        </p>
+    </div>
+</div>
+<% } %>
+
+<div class="transactions-header">
+    <a href="/transactions/new" class="btn"><i class="fas fa-plus"></i> Nueva Transacción</a>
+    <div class="header-actions">
+        <a href="/transactions/export" class="btn secondary"><i class="fas fa-download"></i> Exportar</a>
+        <% if (filters && Object.keys(filters).length > 0) { %>
+            <a href="/transactions/clear-filters" class="btn secondary"><i class="fas fa-times"></i> Limpiar Filtros</a>
+        <% } %>
+    </div>
+</div>
+
+<!-- Panel de Filtros -->
+<div class="filters-panel">
+    <h3><i class="fas fa-sliders-h"></i> Filtros</h3>
+    <form action="/transactions/filter" method="GET" class="filters-form">
+        <div class="filter-row">
+            <div class="filter-group">
+                <label for="search">Buscar:</label>
+                <input type="text" id="search" name="search" placeholder="Descripción..." value="<%= filters && filters.search ? filters.search : '' %>">
+            </div>
+            
+            <div class="filter-group">
+                <label for="category">Categoría:</label>
+                <select id="category" name="category">
+                    <option value="todas">Todas las categorías</option>
+                    <% categories.forEach(cat => { %>
+                        <option value="<%= cat.name %>" 
+                            <%= filters && filters.category === cat.name ? 'selected' : '' %>>
+                            <%= cat.name %>
+                        </option>
+                    <% }); %>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="type">Tipo:</label>
+                <select id="type" name="type">
+                    <option value="todos">Todos los tipos</option>
+                    <option value="ingreso" <%= filters && filters.type === 'ingreso' ? 'selected' : '' %>>Ingresos</option>
+                    <option value="gasto" <%= filters && filters.type === 'gasto' ? 'selected' : '' %>>Gastos</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="filter-row">
+            <div class="filter-group">
+                <label for="startDate">Fecha desde:</label>
+                <input type="date" id="startDate" name="startDate" value="<%= filters && filters.startDate ? filters.startDate : '' %>">
+            </div>
+            
+            <div class="filter-group">
+                <label for="endDate">Fecha hasta:</label>
+                <input type="date" id="endDate" name="endDate" value="<%= filters && filters.endDate ? filters.endDate : '' %>">
+            </div>
+            
+            <div class="filter-group">
+                <label for="minAmount">Monto mínimo:</label>
+                <input type="number" id="minAmount" name="minAmount" step="0.01" placeholder="Mínimo" value="<%= filters && filters.minAmount ? filters.minAmount : '' %>">
+            </div>
+            
+            <div class="filter-group">
+                <label for="maxAmount">Monto máximo:</label>
+                <input type="number" id="maxAmount" name="maxAmount" step="0.01" placeholder="Máximo" value="<%= filters && filters.maxAmount ? filters.maxAmount : '' %>">
+            </div>
+        </div>
+        
+        <div class="filter-row">
+            <div class="filter-group">
+                <label for="sortField">Ordenar por:</label>
+                <select id="sortField" name="sortField">
+                    <option value="date" <%= filters && filters.sortField === 'date' ? 'selected' : '' %>>Fecha</option>
+                    <option value="amount" <%= filters && filters.sortField === 'amount' ? 'selected' : '' %>>Monto</option>
+                    <option value="description" <%= filters && filters.sortField === 'description' ? 'selected' : '' %>>Descripción</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="sortOrder">Orden:</label>
+                <select id="sortOrder" name="sortOrder">
+                    <option value="desc" <%= filters && filters.sortOrder === 'desc' ? 'selected' : '' %>>Más reciente primero</option>
+                    <option value="asc" <%= filters && filters.sortOrder === 'asc' ? 'selected' : '' %>>Más antiguo primero</option>
+                </select>
+            </div>
+            
+            <div class="filter-actions">
+                <button type="submit" class="btn"><i class="fas fa-filter"></i> Aplicar Filtros</button>
+                <a href="/transactions" class="btn secondary"><i class="fas fa-sync"></i> Restablecer</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<% if (error) { %>
+    <div class="alert error">
+        <i class="fas fa-exclamation-circle"></i> <%= error %>
+    </div>
+<% } %>
+
+<% if (transactions.length === 0) { %>
+    <div class="empty-state">
+        <% if (filters && Object.keys(filters).length > 0) { %>
+            <p><i class="fas fa-search fa-3x"></i></p>
+            <h3>No hay transacciones que coincidan con los filtros</h3>
+            <p>Intenta ajustar los criterios de búsqueda</p>
+            <a href="/transactions/clear-filters" class="btn">Ver todas las transacciones</a>
+        <% } else { %>
+            <p><i class="fas fa-receipt fa-3x"></i></p>
+            <h3>No hay transacciones registradas</h3>
+            <p>Comienza registrando tu primera transacción</p>
+            <a href="/transactions/new" class="btn">Crear primera transacción</a>
+        <% } %>
+    </div>
+<% } else { %>
+    <div class="transactions-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Descripción</th>
+                    <th>Categoría</th>
+                    <th>Tipo</th>
+                    <th>Monto</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% transactions.forEach(transaction => { %>
+                <tr>
+                    <td><%= transaction.date %></td>
+                    <td><%= transaction.description %></td>
+                    <td><%= transaction.category %></td>
+                    <td>
+                        <span class="type-badge <%= transaction.type %>">
+                            <%= transaction.type === 'ingreso' ? 'Ingreso' : 'Gasto' %>
+                        </span>
+                    </td>
+                    <td class="amount <%= transaction.type %>">
+                        <%= transaction.type === 'ingreso' ? '+' : '-' %>$<%= transaction.amount.toFixed(2) %>
+                    </td>
+                    <td class="actions">
+                        <a href="/transactions/<%= transaction.id %>/edit" class="btn small">Editar</a>
+                        <form action="/transactions/<%= transaction.id %>?_method=DELETE" method="POST" class="delete-form">
+                            <button type="submit" class="btn small danger" onclick="return confirm('¿Estás seguro de eliminar esta transacción?')">Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    </div>
+    
+    <% if (transactions.length > 10) { %>
+    <div class="table-footer">
+        <p>Mostrando <%= transactions.length %> transacciones</p>
+        <% if (filters && Object.keys(filters).length > 0) { %>
+            <a href="/transactions/export?<%= new URLSearchParams(filters).toString() %>" class="btn secondary">
+                <i class="fas fa-download"></i> Exportar resultados filtrados
+            </a>
+        <% } %>
+    </div>
+    <% } %>
+<% } %>

@@ -1,0 +1,52 @@
+<h2><i class="fas fa-tags"></i> Gestión de Categorías</h2>
+
+<div class="actions-header">
+    <a href="/categories/new" class="btn"><i class="fas fa-plus"></i> Nueva Categoría</a>
+    <a href="/transactions" class="btn secondary"><i class="fas fa-arrow-left"></i> Volver a Transacciones</a>
+</div>
+
+<% if (error) { %>
+    <div class="alert error">
+        <i class="fas fa-exclamation-circle"></i> <%= error %>
+    </div>
+<% } %>
+
+<% if (categories.length === 0) { %>
+    <div class="empty-state">
+        <p><i class="fas fa-tags fa-3x"></i></p>
+        <h3>No hay categorías creadas</h3>
+        <p>Comienza creando tu primera categoría para organizar tus transacciones</p>
+        <a href="/categories/new" class="btn">Crear primera categoría</a>
+    </div>
+<% } else { %>
+    <div class="categories-grid">
+        <% categories.forEach(function(category) { %>
+        <div class="category-card" style="border-left: 4px solid <%= category.color || '#6c757d' %>;">
+            <div class="category-header">
+                <h3><%= category.name %></h3>
+                <span class="type-badge <%= category.type %>">
+                    <% if (category.type === 'ingreso') { %>
+                        Ingreso
+                    <% } else if (category.type === 'gasto') { %>
+                        Gasto
+                    <% } else { %>
+                        Mixto
+                    <% } %>
+                </span>
+            </div>
+            
+            <div class="category-color">
+                <span class="color-dot" style="background-color: <%= category.color || '#6c757d' %>"></span>
+                <%= category.color || '#6c757d' %>
+            </div>
+            
+            <div class="category-actions">
+                <a href="/categories/<%= category.id %>/edit" class="btn small">Editar</a>
+                <form action="/categories/<%= category.id %>?_method=DELETE" method="POST" class="delete-form">
+                    <button type="submit" class="btn small danger" onclick="return confirm('¿Estás seguro de eliminar esta categoría?')">Eliminar</button>
+                </form>
+            </div>
+        </div>
+        <% }); %>
+    </div>
+<% } %>
