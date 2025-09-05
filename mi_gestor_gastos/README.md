@@ -56,8 +56,8 @@ Una aplicación web completa para gestionar finanzas personales, construida con 
 
 ## 🎥 Video Demostrativo
 
-[![Video Demostración](https://youtu.be/DzNmTdxmnq8)
-*Click para ver video demostrativo de todas las funcionalidades*
+[![Video Demostración](https://img.youtube.com/vi/DzNmTdxmnq8/0.jpg)](https://youtu.be/DzNmTdxmnq8)
+*Click en la imagen para ver video demostrativo de todas las funcionalidades*
 
 ## 📦 Instalación Local
 
