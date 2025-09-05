@@ -137,4 +137,4 @@ process.on('SIGINT', () => {
 process.on('SIGTERM', () => {
   console.log('\n🛑 Recibida señal de terminación...');
   process.exit(0);
-});
+});// Último intento deploy: viernes,  5 de septiembre de 2025, 15:22:24 CST
