@@ -1,0 +1,11 @@
+[phases.setup]
+cmds = ["curl -fsSL https://deb.nodesource.com/setup_18.x | bash -"]
+
+[phases.install]
+cmds = ["apt-get update && apt-get install -y nodejs"]
+
+[phases.build]
+cmds = ["npm install"]
+
+[start]
+cmd = "npm start"
